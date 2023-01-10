@@ -516,8 +516,8 @@ func (c *diskCache) availableOrTryProxy(kind cache.EntryKind, hash string, size 
 	if locked {
 		c.mu.Unlock()
 	}
-
-	return nil, -1, tryProxy, err
+	// Set tryProxy to false forcefully untill we introduce a flag for this
+	return nil, -1, false, err
 }
 
 var errOnlyCompressedCAS = &cache.Error{
@@ -724,12 +724,13 @@ func (c *diskCache) Contains(ctx context.Context, kind cache.EntryKind, hash str
 		return true, foundSize
 	}
 
-	if c.proxy != nil && size <= c.maxProxyBlobSize {
-		exists, foundSize = c.proxy.Contains(ctx, kind, hash)
-		if exists && foundSize <= c.maxProxyBlobSize && !isSizeMismatch(size, foundSize) {
-			return true, foundSize
-		}
-	}
+	// disable hash lookup in proxy
+	// if c.proxy != nil && size <= c.maxProxyBlobSize {
+	// 	exists, foundSize = c.proxy.Contains(ctx, kind, hash)
+	// 	if exists && foundSize <= c.maxProxyBlobSize && !isSizeMismatch(size, foundSize) {
+	// 		return true, foundSize
+	// 	}
+	// }
 
 	return false, -1
 }
